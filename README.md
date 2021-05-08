@@ -398,4 +398,4 @@ plt.ylabel('True Positive Rate')
 plt.xlabel('False Positive Rate');
 ```
 
-<img src=>
+<img src='datasets/auc.jpg'>
