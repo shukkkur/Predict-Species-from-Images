@@ -261,7 +261,7 @@ grey_bombus = rgb2grey(bombus)
 <h3>4. Histogram of oriented gradients</h3>
 <p>The idea behind <b>HOG</b> is that an object's shape within an image can be inferred by its edges, and a way to identify edges is by looking at the direction of intensity gradients (i.e. changes in luminescence).</p>
 
-<p>
+<p align='center'>
   <img src='datasets/hog.jpg'>
 </p>
 
@@ -275,3 +275,70 @@ hog_features, hog_image = hog(grey_bombus,
 plt.imshow(hog_image, cmap=mpl.cm.gray)
 ```
  <img src='datasets/gr_bombus.jpg'>
+
+<h3>5. Create image features and flatten into a single row</h3>
+
+<p>Algorithms require data to be in a format where rows correspond to images and columns correspond to features. This means that all the information for a given image needs to be contained in a single row. We want to provide our model with the raw pixel values from our images as well as the HOG features we just calculated. <br>Let's generate a flattened features array for the bombus image</p>
+
+```python
+def create_features(img):
+    color_features = img.flatten()
+    # convert image to greyscale
+    grey_image = rgb2grey(img)
+    # get HOG features from greyscale image
+    hog_features = hog(grey_image, block_norm='L2-Hys', pixels_per_cell=(16, 16))
+    # combine color and hog features into a single array
+    flat_features = np.hstack([color_features, hog_features])
+    return flat_features
+
+bombus_features = create_features(bombus)
+
+# print shape of bombus_features
+bombus_features.shape
+
+>>> (31296,)
+```
+
+<h3>6. Loop over images to preprocess</h3>
+<p>Now it's time to loop over all of our images. We will create features for each image and then stack the flattened features arrays into a big matrix we can pass into our model.</p>
+
+```python
+def create_feature_matrix(label_dataframe):
+    features_list = []
+    
+    for img_id in label_dataframe.index:
+        img = get_image(img_id)
+        image_features = create_features(img)
+        features_list.append(image_features)
+          
+    feature_matrix = np.array(features_list)
+    return feature_matrix
+
+feature_matrix = create_feature_matrix(labels)
+feature_matrix.shape # rows correspond to images and columns to features.
+
+>>> (500, 31296)
+```
+
+<h3>7. Scale feature matrix + PCA</h3>
+
+<p>Many machine learning methods are built to work best with data that has a mean of 0 and unit variance. Luckily there is <code>StandardScaler</code> method.</p>
+<p>Also that we have over <code>31,000</code> features for each image and only <code>500</code> images total. To use an SVM, our model, we also need to reduce the number of features we have using <b>principal component analysis</b> (PCA).</p>
+
+```python
+print('Feature matrix shape is: ', feature_matrix.shape)
+
+scaler = StandardScaler()
+bees_stand = scaler.fit_transform(feature_matrix)
+
+pca = PCA(n_components=500)
+# use fit_transform to run PCA on our standardized matrix
+bees_pca = pca.fit_transform(bees_stand)
+
+print('PCA matrix shape is: ', bees_pca.shape)
+
+>>> Feature matrix shape is:  (500, 31296)
+>>> PCA matrix shape is:  (500, 500)
+```
+
+<h3>8. Split into train and test sets</h3>
