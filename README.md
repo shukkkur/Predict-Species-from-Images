@@ -178,4 +178,6 @@ plot_kde(honey_bw_arr, 'k')
 
 >>> Our NumPy array has the shape: (100, 100)
 ```
+<img src='datasets/simplify.jpg'></p>
 
+<h3>Part 2: Building & Predicting </h3>
