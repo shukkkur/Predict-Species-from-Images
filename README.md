@@ -106,7 +106,7 @@ plt.show()
 >>> Our NumPy array has the shape: (100, 100, 3)
 ```
 
-<img src='<p align='left'><img src='datasets/bees.jpg'>
+<img src='datasets/bees.jpg'>
   
 <h3>5. Explore the color channels </h3>
 <p>Color channels can help provide more information about an image. This kind of information can be useful when building models or examining the differences between images.<br>Let's look at the kernel density estimate for each of the color channels on the same plot so that we can understand how they differ.</p>
@@ -134,3 +134,48 @@ def plot_rgb(image_data):
 plot_rgb(img_data)
 ```
 <img src='datasets/kernel.jpg'>
+
+
+<h3>6. Honey bees and bumble bees</h3>
+<p>Now we'll look at two different images and some of the differences between them.</p>
+
+```python
+honey = Image.open('datasets/bee_12.jpg')
+bumble = Image.open('datasets/bee_3.jpg')
+
+display(honey)
+display(bumble)
+
+honey_data = np.array(honey)
+bumble_data = np.array(bumble)
+
+plot_rgb(honey_data)
+plot_rgb(bumble_data)
+```
+
+<p align='left'><img src='datasets/bee_3.jpg'></p>
+<p align='left'><img src='datasets/kernel_honey.jpg'></p>
+<p align='left'><img src='datasets/bee_12.jpg'></p>
+<p align='left'><img src='datasets/kernel_bumble.jpg'></p>
+
+<h3>8. Simplify</h3>
+<p>We know that the colors of the flowers may be distracting from separating honey bees from bumble bees, so let's convert these images to black-and-white, or "grayscale." Because we change the number of color "channels," the shape of our array changes with this change. <p3>
+
+```python
+# convert honey to grayscale
+honey_bw = honey.convert("L")
+
+# convert the image to a NumPy array
+honey_bw_arr = np.array(honey_bw)
+
+honey_bw_arr_shape = honey_bw_arr.shape
+print("Our NumPy array has the shape: {}".format(honey_bw_arr_shape))
+
+plt.imshow(honey_bw_arr, cmap=plt.cm.gray)
+plt.show()
+
+plot_kde(honey_bw_arr, 'k')
+
+>>> Our NumPy array has the shape: (100, 100)
+```
+
