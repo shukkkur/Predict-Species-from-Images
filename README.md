@@ -181,3 +181,97 @@ plot_kde(honey_bw_arr, 'k')
 <img src='datasets/simplify.jpg'></p>
 
 <h3>Part 2: Building & Predicting </h3>
+
+<h3>1. Import Python libraries</h3>
+
+```python
+import os
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from IPython.display import display
+%matplotlib inline
+
+import pandas as pd
+import numpy as np
+
+from PIL import Image
+
+from skimage.feature import hog
+from skimage.color import rgb2grey
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+
+from sklearn.metrics import roc_curve, auc, accuracy_score
+```
+
+<h3>2. Display image of each bee type</h3>
+<p>Let's load load our <code>labels.csv</code> file into a dataframe called labels, where the <code>index</code> is the image name (e.g. an index of 1036 refers to an image named 1036.jpg) and the genus column tells us the bee type. <code>genus</code> takes the value of either <code>0.0</code> (Apis or honey bee) or <code>1.0</code> (Bombus or bumble bee).</p>
+
+```python
+labels = pd.read_csv("datasets/labels.csv", index_col=0)
+display(labels.head())
+
+def get_image(row_id, root="datasets/"):
+    """
+    Converts an image number into the file path where the image is located, 
+    opens the image, and returns the image as a numpy array.
+    """
+    filename = "{}.jpg".format(row_id)
+    file_path = os.path.join(root, filename)
+    img = Image.open(file_path)
+    return np.array(img)
+
+# subset the dataframe to just Apis (genus is 0.0) get the value of the sixth item in the index
+apis_row = labels[labels.genus == 0.0].index[5]
+
+# show the corresponding image of an Apis
+plt.imshow(get_image(apis_row))
+plt.show()
+
+# subset the dataframe to just Bombus (genus is 1.0) get the value of the sixth item in the index
+bombus_row = labels[labels.genus == 1.0].index[5]
+
+# show the corresponding image of a Bombus
+plt.imshow(get_image(bombus_row))
+plt.show()
+```
+|      | genus | 
+|-----:|------:|
+|  id  |       |
+|  520 | 1.0   |
+| 3800 | 1.0   |
+| 3289 | 1.0   |
+| 2695 | 1.0   |
+| 4922 | 1.0   |
+
+<img src='datasets/df_bees.png'>
+
+<h3>3. Image manipulation with rgb2grey</h3>
+<p>The rgb2grey function computes the luminance of an RGB image using the following formula Y = 0.2125 R + 0.7154 G + 0.0721 B. </p>
+
+```python
+bombus = get_image(bombus_row)
+grey_bombus = rgb2grey(bombus)
+```
+
+<h3>4. Histogram of oriented gradients</h3>
+<p>The idea behind <b>HOG</b> is that an object's shape within an image can be inferred by its edges, and a way to identify edges is by looking at the direction of intensity gradients (i.e. changes in luminescence).</p>
+
+<p>
+  <img src='datasets/hog.jpg'>
+</p>
+
+```python
+hog_features, hog_image = hog(grey_bombus,
+                              visualize=True,
+                              block_norm='L2-Hys',
+                              pixels_per_cell=(16, 16))
+
+# show our hog_image with a grey colormap
+plt.imshow(hog_image, cmap=mpl.cm.gray)
+```
+ <img src='datasets/gr_bombus.jpg'>
