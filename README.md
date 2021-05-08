@@ -342,3 +342,60 @@ print('PCA matrix shape is: ', bees_pca.shape)
 ```
 
 <h3>8. Split into train and test sets</h3>
+<p>We'll use 70% of images as our training data and test our model on the remaining 30%.</p>
+
+```python
+X_train, X_test, y_train, y_test = train_test_split(bees_pca,
+                                                    labels.genus.values,
+                                                    test_size=.3,
+                                                    random_state=1234123)
+```
+
+<h3>9. Train model</h3>
+<p>We'll use a <b>support vector machine</b> (SVM), a type of supervised machine learning model. Since we have a classification task -- honey or bumble bee -- we will use the support vector classifier (SVC).</p>
+
+```python
+# define support vector classifier
+svm = SVC(kernel='linear', probability=True, random_state=42)
+
+# fit model
+svm.fit(X_train, y_train)
+```
+
+<h3>10. Score model</h3>
+<p>And finally, let's see how accurate is our model. Accuracy is the number of correct predictions divided by the total number of predictions.</p>
+
+```python
+y_pred = svm.predict(X_test)
+
+accuracy = accuracy_score(y_test, y_pred)
+accuracy
+
+>>> 0.68
+```
+
+<h3>11. ROC curve + AUC</h3>
+<p>The receiver operating characteristic curve (ROC curve) plots the false positive rate and true positive rate at different thresholds. ROC curves are judged visually by how close they are to the upper lefthand corner. <br>The area under the curve (AUC) is also calculated, where 1 means every predicted label was correct.</p>
+
+```python
+probabilities = svm.predict_proba(X_test)
+
+# select the probabilities for label 1.0
+y_proba = probabilities[:, 1]
+
+false_positive_rate, true_positive_rate, thresholds = roc_curve(y_test, y_proba, pos_label=1)
+
+roc_auc = auc(false_positive_rate, true_positive_rate)
+
+plt.title('Receiver Operating Characteristic')
+roc_plot = plt.plot(false_positive_rate,
+                    true_positive_rate,
+                    label='AUC = {:0.2f}'.format(roc_auc))
+
+plt.legend(loc=0)
+plt.plot([0,1], [0,1], ls='--')
+plt.ylabel('True Positive Rate')
+plt.xlabel('False Positive Rate');
+```
+
+<img src=>
